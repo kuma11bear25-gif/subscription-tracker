@@ -213,7 +213,8 @@
     <form id="subForm">
       <div class="field">
         <label for="name">サービス名</label>
-        <input type="text" id="name" placeholder="例：Netflix" required>
+        <input type="text" id="name" placeholder="例：Netflix" list="serviceNames" autocomplete="off" required>
+        <datalist id="serviceNames"></datalist>
       </div>
       <div class="field">
         <label for="amount">金額（円）</label>
@@ -266,6 +267,52 @@
     opt.textContent = d + '日';
     daySelect.appendChild(opt);
   }
+
+  const knownServices = {
+    'Netflix': '動画配信',
+    'Amazon Prime Video': '動画配信',
+    'Disney+': '動画配信',
+    'Hulu': '動画配信',
+    'U-NEXT': '動画配信',
+    'ABEMAプレミアム': '動画配信',
+    'DAZN': '動画配信',
+    'dアニメストア': '動画配信',
+    'Spotify': '音楽',
+    'Apple Music': '音楽',
+    'YouTube Music': '音楽',
+    'YouTube Premium': '動画配信',
+    'LINE MUSIC': '音楽',
+    'Amazon Music Unlimited': '音楽',
+    'Nintendo Switch Online': 'ゲーム',
+    'PlayStation Plus': 'ゲーム',
+    'Xbox Game Pass': 'ゲーム',
+    'Apple Arcade': 'ゲーム',
+    'Microsoft 365': '仕事・学習',
+    'Adobe Creative Cloud': '仕事・学習',
+    'ChatGPT Plus': '仕事・学習',
+    'Claude Pro': '仕事・学習',
+    'Google One': '仕事・学習',
+    'iCloud+': '仕事・学習',
+    'Notion': '仕事・学習',
+    'Dropbox': '仕事・学習',
+    'Kindle Unlimited': '仕事・学習',
+    'Apple One': '仕事・学習',
+    'Apple Fitness+': '健康・フィットネス'
+  };
+
+  const serviceNameList = document.getElementById('serviceNames');
+  Object.keys(knownServices).forEach(serviceName => {
+    const opt = document.createElement('option');
+    opt.value = serviceName;
+    serviceNameList.appendChild(opt);
+  });
+
+  document.getElementById('name').addEventListener('input', function () {
+    const matchedCategory = knownServices[this.value];
+    if (matchedCategory) {
+      document.getElementById('category').value = matchedCategory;
+    }
+  });
 
   function loadSubs() {
     try {
