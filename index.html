@@ -91,6 +91,34 @@
     border-color: var(--accent);
     background: #fff;
   }
+  .plan-chips {
+    margin-top: 8px;
+  }
+  .plan-chips[hidden] {
+    display: none;
+  }
+  .plan-hint {
+    font-size: 0.72rem;
+    color: var(--text-sub);
+    margin-bottom: 6px;
+  }
+  .plan-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0 6px 6px 0;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    color: var(--accent-dark);
+    background: #fff;
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    cursor: pointer;
+  }
+  .plan-chip.selected {
+    color: #fff;
+    background: var(--accent);
+  }
   button.submit {
     width: 100%;
     padding: 14px;
@@ -215,6 +243,7 @@
         <label for="name">サービス名</label>
         <input type="text" id="name" placeholder="例：Netflix" list="serviceNames" autocomplete="off" required>
         <datalist id="serviceNames"></datalist>
+        <div class="plan-chips" id="planChips" hidden></div>
       </div>
       <div class="field">
         <label for="amount">金額（円）</label>
@@ -268,36 +297,90 @@
     daySelect.appendChild(opt);
   }
 
+  // 料金は2026年8月時点で確認できた目安です。契約プランによって異なるため、必要に応じて修正してください。
   const knownServices = {
-    'Netflix': '動画配信',
-    'Amazon Prime Video': '動画配信',
-    'Disney+': '動画配信',
-    'Hulu': '動画配信',
-    'U-NEXT': '動画配信',
-    'ABEMAプレミアム': '動画配信',
-    'DAZN': '動画配信',
-    'dアニメストア': '動画配信',
-    'Spotify': '音楽',
-    'Apple Music': '音楽',
-    'YouTube Music': '音楽',
-    'YouTube Premium': '動画配信',
-    'LINE MUSIC': '音楽',
-    'Amazon Music Unlimited': '音楽',
-    'Nintendo Switch Online': 'ゲーム',
-    'PlayStation Plus': 'ゲーム',
-    'Xbox Game Pass': 'ゲーム',
-    'Apple Arcade': 'ゲーム',
-    'Microsoft 365': '仕事・学習',
-    'Adobe Creative Cloud': '仕事・学習',
-    'ChatGPT Plus': '仕事・学習',
-    'Claude Pro': '仕事・学習',
-    'Google One': '仕事・学習',
-    'iCloud+': '仕事・学習',
-    'Notion': '仕事・学習',
-    'Dropbox': '仕事・学習',
-    'Kindle Unlimited': '仕事・学習',
-    'Apple One': '仕事・学習',
-    'Apple Fitness+': '健康・フィットネス'
+    'Netflix': { category: '動画配信', plans: [
+      { label: '広告つきスタンダード', amount: 890 },
+      { label: 'スタンダード', amount: 1590 },
+      { label: 'プレミアム', amount: 2290 }
+    ] },
+    'Amazon Prime Video': { category: '動画配信', plans: [{ label: '月額', amount: 600 }] },
+    'Disney+': { category: '動画配信', plans: [
+      { label: 'スタンダード', amount: 1250 },
+      { label: 'プレミアム', amount: 1670 }
+    ] },
+    'Hulu': { category: '動画配信', plans: [{ label: '月額', amount: 1026 }] },
+    'U-NEXT': { category: '動画配信', plans: [{ label: '月額', amount: 2189 }] },
+    'ABEMAプレミアム': { category: '動画配信', plans: [
+      { label: '広告つき', amount: 680 },
+      { label: '通常', amount: 1180 }
+    ] },
+    'DAZN': { category: '動画配信', plans: [{ label: 'スタンダード', amount: 4200 }] },
+    'dアニメストア': { category: '動画配信', plans: [{ label: '月額', amount: 660 }] },
+    'YouTube Premium': { category: '動画配信', plans: [
+      { label: '個人', amount: 1280 },
+      { label: '学生', amount: 780 },
+      { label: 'ファミリー', amount: 2280 }
+    ] },
+    'Spotify': { category: '音楽', plans: [
+      { label: '個人', amount: 1080 },
+      { label: '学生', amount: 580 },
+      { label: 'デュオ', amount: 1480 },
+      { label: 'ファミリー', amount: 1880 }
+    ] },
+    'Apple Music': { category: '音楽', plans: [
+      { label: '個人', amount: 1180 },
+      { label: '学生', amount: 680 },
+      { label: 'ファミリー', amount: 1980 }
+    ] },
+    'YouTube Music': { category: '音楽', plans: [{ label: '月額', amount: 1080 }] },
+    'LINE MUSIC': { category: '音楽', plans: [
+      { label: '一般（LINE STORE）', amount: 980 },
+      { label: 'ファミリー', amount: 1480 }
+    ] },
+    'Amazon Music Unlimited': { category: '音楽', plans: [
+      { label: 'Prime会員', amount: 1080 },
+      { label: '非会員', amount: 1180 }
+    ] },
+    'Nintendo Switch Online': { category: 'ゲーム', plans: [{ label: '個人（1ヶ月）', amount: 400 }] },
+    'PlayStation Plus': { category: 'ゲーム', plans: [
+      { label: 'エッセンシャル', amount: 850 },
+      { label: 'エクストラ', amount: 1300 },
+      { label: 'プレミアム', amount: 1550 }
+    ] },
+    'Xbox Game Pass': { category: 'ゲーム', plans: [
+      { label: 'Essential', amount: 850 },
+      { label: 'Premium', amount: 1300 },
+      { label: 'Ultimate', amount: 1550 }
+    ] },
+    'Apple Arcade': { category: 'ゲーム', plans: [{ label: '月額', amount: 900 }] },
+    'Microsoft 365': { category: '仕事・学習', plans: [
+      { label: 'Personal', amount: 2130 },
+      { label: 'Family', amount: 2740 }
+    ] },
+    'Adobe Creative Cloud': { category: '仕事・学習', plans: [
+      { label: 'Standard', amount: 6480 },
+      { label: 'Pro', amount: 9080 }
+    ] },
+    'ChatGPT Plus': { category: '仕事・学習', plans: [{ label: '月額', amount: 3000 }] },
+    'Claude Pro': { category: '仕事・学習', plans: [{ label: '月額', amount: 3300 }] },
+    'Google One': { category: '仕事・学習', plans: [
+      { label: '200GB', amount: 440 },
+      { label: '2TB', amount: 1450 }
+    ] },
+    'iCloud+': { category: '仕事・学習', plans: [
+      { label: '50GB', amount: 180 },
+      { label: '200GB', amount: 540 },
+      { label: '2TB', amount: 1800 }
+    ] },
+    'Notion': { category: '仕事・学習', plans: [{ label: 'Plus', amount: 1500 }] },
+    'Dropbox': { category: '仕事・学習', plans: [] },
+    'Kindle Unlimited': { category: '仕事・学習', plans: [{ label: '月額', amount: 980 }] },
+    'Apple One': { category: '仕事・学習', plans: [
+      { label: '個人', amount: 1350 },
+      { label: 'ファミリー', amount: 2500 }
+    ] },
+    'Apple Fitness+': { category: '健康・フィットネス', plans: [] }
   };
 
   const serviceNameList = document.getElementById('serviceNames');
@@ -307,11 +390,37 @@
     serviceNameList.appendChild(opt);
   });
 
-  document.getElementById('name').addEventListener('input', function () {
-    const matchedCategory = knownServices[this.value];
-    if (matchedCategory) {
-      document.getElementById('category').value = matchedCategory;
+  const planChips = document.getElementById('planChips');
+  const amountInput = document.getElementById('amount');
+
+  function renderPlanChips(info) {
+    if (!info || info.plans.length === 0) {
+      planChips.hidden = true;
+      planChips.innerHTML = '';
+      return;
     }
+    planChips.hidden = false;
+    planChips.innerHTML = '<div class="plan-hint">参考価格（目安・タップで金額欄に入力）</div>' +
+      info.plans.map(p => `<button type="button" class="plan-chip" data-amount="${p.amount}">${escapeHtml(p.label)} ${formatYen(p.amount)}</button>`).join('');
+    if (info.plans.length === 1 && amountInput.value === '') {
+      amountInput.value = info.plans[0].amount;
+    }
+  }
+
+  document.getElementById('name').addEventListener('input', function () {
+    const info = knownServices[this.value];
+    if (info) {
+      document.getElementById('category').value = info.category;
+    }
+    renderPlanChips(info);
+  });
+
+  planChips.addEventListener('click', function (e) {
+    const btn = e.target.closest('.plan-chip');
+    if (!btn) return;
+    amountInput.value = btn.dataset.amount;
+    this.querySelectorAll('.plan-chip').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
   });
 
   function loadSubs() {
@@ -402,6 +511,7 @@
     saveSubs(subs);
     render();
     this.reset();
+    renderPlanChips(null);
     document.getElementById('name').focus();
   });
 
